@@ -11,6 +11,7 @@ import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.protocol.types.Field;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.partitioning.VIPPartitioner;
 import org.serializers.customSerializer;
 
 import java.util.Collections;
@@ -75,6 +76,7 @@ public class KafkaProducerAccount {
         prop.setProperty("bootstrap.servers","localhost:9092");
         prop.setProperty("key.serializer", StringSerializer.class.getName());
         prop.setProperty("value.serializer", customSerializer.class.getName());
+        prop.setProperty("partitioner.class", VIPPartitioner.class.getName());
 //        prop.setProperty("value.serializer","org.serializers.customSerializer");
         createTopicIfNotExist("DEBIT");
 
@@ -121,7 +123,7 @@ public class KafkaProducerAccount {
 
                     if (!existingTopics.contains(topicName)) {
                         // Define the number of partitions and replication factor
-                        int numPartitions = 1;
+                        int numPartitions = 9;
                         short replicationFactor = 1;
 
                         // Create a new topic

@@ -13,17 +13,17 @@ import java.util.Properties;
 
 public class KafkaConsumerAccount {
 
-    public static void main(String args[]){
+    public static void main(String args[]) {
         Properties properties = new Properties();
-        properties.setProperty("bootstrap.servers","localhost:9092");
-        properties.setProperty("key.deserializer","org.apache.kafka.common.serialization.StringDeserializer");
-        properties.setProperty("value.deserializer","org.apache.kafka.common.serialization.IntegerDeserializer");
-        properties.setProperty("group.id","AccountTopic");
-        KafkaConsumer<String,Integer> consumer = new KafkaConsumer<String, Integer>(properties);
+        properties.setProperty("bootstrap.servers", "localhost:9092");
+        properties.setProperty("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+        properties.setProperty("value.deserializer", "org.apache.kafka.common.serialization.IntegerDeserializer");
+        properties.setProperty("group.id", "AccountTopic");
+        KafkaConsumer<String, Integer> consumer = new KafkaConsumer<String, Integer>(properties);
         consumer.subscribe(Collections.singletonList("ACCOUNTS"));
 
-        ConsumerRecords<String,Integer> consumed = consumer.poll(Duration.ofSeconds(20));
-        for(ConsumerRecord<String, Integer> record : consumed){
+        ConsumerRecords<String, Integer> consumed = consumer.poll(Duration.ofSeconds(20));
+        for (ConsumerRecord<String, Integer> record : consumed) {
             System.out.println("Account Name" + record.key());
             System.out.println("Account Number" + record.value());
             System.out.println(record.toString());
@@ -33,23 +33,28 @@ public class KafkaConsumerAccount {
 
         //custom Deserializer
         Properties prop = new Properties();
-        prop.setProperty("bootstrap.servers","localhost:9092");
+        prop.setProperty("bootstrap.servers", "localhost:9092");
         prop.setProperty("key.deserializer", StringDeserializer.class.getName());
-        prop.setProperty("value.deserializer","org.serializers.customDeserializer");
-        prop.setProperty("group.id","DEBITTOPIC");
+        prop.setProperty("value.deserializer", "org.serializers.customDeserializer");
+        prop.setProperty("group.id", "DEBITTOPIC");
 
-        KafkaConsumer<String,Account> consumer1 = new KafkaConsumer<String, Account>(prop);
+        KafkaConsumer<String, Account> consumer1 = new KafkaConsumer<String, Account>(prop);
         consumer1.subscribe(Collections.singletonList("DEBIT"));
 
-        ConsumerRecords<String, Account> consumed1 = consumer1.poll(Duration.ofSeconds(20));
+        while (true) {
+            try {
+                ConsumerRecords<String, Account> consumed1 = consumer1.poll(Duration.ofSeconds(20));
 
-        for(ConsumerRecord<String, Account> record : consumed1){
-            System.out.println("Customer Name" + record.key());
-            Account account = record.value();
-            System.out.println(account.getAmountDebited());
+                for (ConsumerRecord<String, Account> record : consumed1) {
+                    System.out.println("Partition Id" + record.partition());
+                    System.out.println("Customer Name" + record.key());
+                    Account account = record.value();
+                    System.out.println(account.getAmountDebited());
+                }
+            } catch (Exception e) {
+                consumer1.close();
+            }
         }
-        consumer1.close();
-
 
     }
 
