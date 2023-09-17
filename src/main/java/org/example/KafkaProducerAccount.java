@@ -1,5 +1,6 @@
 package org.example;
 
+import org.AccountPojo.Account;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.ListTopicsResult;
@@ -7,6 +8,10 @@ import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
+import org.apache.kafka.common.protocol.types.Field;
+import org.apache.kafka.common.serialization.StringDeserializer;
+import org.apache.kafka.common.serialization.StringSerializer;
+import org.serializers.customSerializer;
 
 import java.util.Collections;
 import java.util.Properties;
@@ -63,6 +68,37 @@ public class KafkaProducerAccount {
         finally {
             producer.close();
         }
+
+        // creating the custom serializer
+
+        Properties prop = new Properties();
+        prop.setProperty("bootstrap.servers","localhost:9092");
+        prop.setProperty("key.serializer", StringSerializer.class.getName());
+        prop.setProperty("value.serializer", customSerializer.class.getName());
+//        prop.setProperty("value.serializer","org.serializers.customSerializer");
+        createTopicIfNotExist("DEBIT");
+
+        KafkaProducer<String, Account> producer1 = new KafkaProducer<String, Account>(prop);
+
+        Account account = new Account();
+        account.setAccountNum(1001);
+        account.setName("Postpaid");
+        account.setAmountDebited(500);
+        account.setRemBalance(1002002);
+        String customerName = "Harish";
+
+        ProducerRecord<String, Account> producerRecord = new ProducerRecord<>("DEBIT",customerName,account);
+
+        try {
+            producer1.send(producerRecord, new OrderCallBack());
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+        finally {
+            producer1.close();
+        }
+
 
 
     }
